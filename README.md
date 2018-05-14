@@ -1,7 +1,7 @@
 It is a small prototype for Mitmproxy **Commands language**.
 It isn't inteded to be used for any reason except **Commands language** testing.
 
-You can specify some parameters for pytcp.
+### How to use it
 
 `python3.6 main.py [-h] [-p PATH | -c COMMAND] [-q]`
 
