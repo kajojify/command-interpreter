@@ -9,7 +9,7 @@ tokens = (
     "LBRACE", "WHITESPACE"
 )
 
-special_symbol = re.escape("!@#$%^&*()+{}:<>?.,;/][=-~")
+special_symbol = re.escape("!@#$%^&*()+{}:<>?.,;/=-~")
 PLAIN_STR = r"[\w{}]+".format(special_symbol)
 
 t_WHITESPACE = r"\s+"
@@ -17,8 +17,8 @@ t_PIPE = r"\|"
 t_QUOTED_STR = r"\"[\w{0}\s]*\"|\'[\w{0}\s]*\'".format(special_symbol)
 
 
-def t_RPAREN(t):
-    r"\)"
+def t_LBRACE(t):
+    r"\["
     return t
 
 
@@ -32,13 +32,13 @@ def t_LPAREN(t):
     return t
 
 
-def t_LBRACE(t):
-    r"\["
+def t_RPAREN(t):
+    r"\)"
     return t
 
 
 def t_COMMAND(t):
-    r"[&\*]?\w+(\.\w+)+"
+    r"[&\*\.]?\w+(\.\w+)+"
     return t
 
 
