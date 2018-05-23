@@ -1,101 +1,118 @@
 import ply.yacc as yacc
 
+import commands
 import interpreter.lexer
 
-tokens = interpreter.lexer.tokens
+
+class CommandsLanguageParser:
+    tokens = interpreter.lexer.tokens
+
+    def __init__(self, **kwargs):
+        self._pipe_value = None
+        self.parser = yacc.yacc(module=self, **kwargs)
+
+    def parse(self, lexer):
+        self.parser.parse(lexer=lexer)
+
+    def p_command_line(self, p):
+        """command_line : empty
+                        | expression pipes"""
+        if len(p) == 3:
+            print(self._pipe_value)
+        else:
+            print()
+
+    def p_expr_command(self, p):
+        """expression : PLAIN_STR
+                      | QUOTED_STR
+                      | array
+                      | command_call"""
+        p[0] = p[1]
+        self._pipe_value = p[0]
+
+    def p_pipes(self, p):
+        """pipes : pipe_expression pipes
+           pipes : pipe_expression"""
+        if len(p) == 2:
+            p[0] = [p[1]]
+        else:
+            p[0] = [p[1]]
+            p[0].append(p[2])
+
+    def p_pipe(self, p):
+        """pipe_expression : empty
+                           | PIPE command_call"""
+        if len(p) == 3:
+            p[0] = p[2]
+            self._pipe_value = p[0]
+
+    def p_command_call(self, p):
+        """command_call : command_call_no_parentheses
+                        | command_call_with_parentheses"""
+        p[0] = p[1]
+
+    def p_array(self, p):
+        """array : LBRACE argument_list RBRACE"""
+        p[0] = p[2]
+
+    def p_command_call_no_parentheses(self, p):
+        """command_call_no_parentheses : COMMAND argument_list"""
+        cm = commands.CommandsManager()
+        if self._pipe_value is None:
+            p[0] = cm.call(p[1], p[2])
+        else:
+            first_argument = self._pipe_value
+            self._pipe_value = None
+            args = [first_argument, *p[2]]
+            p[0] = cm.call(p[1], args)
+
+    def p_argument_list(self, p):
+        """argument_list : empty
+                         | argument_sequence"""
+        p[0] = [] if p[1] is None else p[1]
+
+    def p_argument_sequence(self, p):
+        """argument_sequence : argument_sequence argument
+           argument_sequence : argument"""
+        if len(p) == 2:
+            if isinstance(p[1], list):
+                p[0] = p[1]
+            else:
+                p[0] = [p[1]]
+        else:
+            p[0] = p[1]
+            p[0].append(p[2])
+
+    def p_argument(self, p):
+        """argument : PLAIN_STR
+                    | QUOTED_STR
+                    | array
+                    | command_call_with_parentheses"""
+        p[0] = p[1]
+
+    def p_command_call_with_parentheses(self, p):
+        """command_call_with_parentheses : COMMAND LPAREN argument_list RPAREN"""
+        cm = commands.CommandsManager()
+        if self._pipe_value is None:
+            p[0] = cm.call(p[1], p[3])
+        else:
+            first_argument = self._pipe_value
+            self._pipe_value = None
+            args = [first_argument, *p[3]]
+            p[0] = cm.call(p[1], args)
 
 
-def p_command_line(p):
-    """command_line : expression pipes"""
-    print(p[1], p[2])
+    def p_empty(self, p):
+        """empty :"""
 
-
-def p_expr_command(p):
-    """expression : empty
-                  | PLAIN_STR
-                  | QUOTED_STR
-                  | array
-                  | command_call_no_parentheses"""
-    p[0] = p[1]
-
-
-def p_pipes(p):
-    """pipes : empty
-             | pipe_expression pipes"""
-    p[0] = p[1:]
-
-
-def p_pipe(p):
-    """pipe_expression : WHITESPACE PIPE WHITESPACE command_call_no_parentheses"""
-    p[0] = p[1:]
-
-
-def p_array(p):
-    """array : LBRACE argument_list RBRACE"""
-    p[0] = [p[2]]
-
-
-def p_command_call_no_parentheses(p):
-    """command_call_no_parentheses : COMMAND e_or_ws argument_list"""
-    p[0] = p[1:]
-
-
-def p_argument_list(p):
-    """argument_list : argument_expression"""
-    p[0] = p[1:]
-
-
-def p_argument_expression(p):
-    """argument_expression : empty
-                           | argument argument_sequence"""
-    p[0] = p[1:]
-
-
-def p_argument_sequence(p):
-    """argument_sequence : empty
-                         | WHITESPACE argument argument_sequence"""
-    p[0] = p[1:]
-
-
-def p_argument(p):
-    """argument : PLAIN_STR
-                | QUOTED_STR
-                | array
-                | command_call_with_parentheses"""
-    p[0] = p[1]
-
-
-
-def p_command_call_with_parentheses(p):
-    """command_call_with_parentheses : COMMAND LPAREN argument_list RPAREN"""
-    p[0] = p[1:]
-
-
-def p_optional_whitespace(p):
-    """e_or_ws : empty
-               | WHITESPACE"""
-    p[0] = "empty or whitespace"
-
-
-def p_empty(p):
-    """empty :"""
-
-
-def p_error(p):
-    print("Syntax error at '%s'" % p.value)
+    def p_error(self, p):
+        if p:
+            print("Syntax error at '%s'" % p.value)
+        else:
+            print("Syntax error. p == None!")
 
 
 def parse(lexer):
-    parser = yacc.yacc()
+    parser = CommandsLanguageParser(write_tables=False,
+                                    debug=False)
     parser.parse(lexer=lexer)
-
-# command_line = ( plain_str | quoted_str | array | command_call_no_parentheses ), { pipe } ;
-#
-# pipe = whitespaces, "|", whitespaces, command_call_no_parentheses ;
-#
-# command_call_with_parentheses = command, { ws }, "(", arguments_list, ")", { ws } ;
-# command_call_no_parentheses = command, whitespaces, arguments_list ;
-#
-# arguments_list = { ws }, [ argument, { whitespaces, argument }, { ws } ] ;
-# array = "[", arguments_list, "]" ;
-# argument = plain_str | quoted_str | array | command_call_with_parentheses ;

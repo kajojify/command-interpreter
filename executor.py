@@ -3,10 +3,11 @@ from interpreter.lexer import get_lexer
 
 
 class CommandsExecutor:
-    def __init__(self, path=None, command=None, quiet=False):
+    def __init__(self, path=None, command=None, quiet=False, tranquil=False):
         self.path = path
         self.onecommand = command
         self.quiet = quiet
+        self.tranquil = tranquil
 
     def run(self):
         if self.path:
@@ -21,7 +22,8 @@ class CommandsExecutor:
         commands_lexer = get_lexer(line)
         if not self.quiet:
             self.output_tokens_list(commands_lexer.clone())
-        parse(commands_lexer)
+        if not self.tranquil:
+            parse(commands_lexer)
 
     def execute_from_file(self):
         try:

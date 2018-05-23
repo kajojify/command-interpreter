@@ -102,3 +102,9 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# ply
+interpreter/parser.out
+interpreter/parsetab.py
+
+.idea/
