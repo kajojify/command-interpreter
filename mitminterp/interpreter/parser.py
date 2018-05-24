@@ -106,10 +106,10 @@ class CommandsLanguageParser:
         """empty :"""
 
     def p_error(self, p):
-        if p:
-            print("Syntax error at '%s'" % p.value)
-        else:
+        if p is None:
             print("Syntax error. p == None!")
+        else:
+            print(f"Syntax error at '{p.value}'")
 
 
 def parse(lexer):

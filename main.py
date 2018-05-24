@@ -1,6 +1,6 @@
 import argparse
 
-from executor import CommandsExecutor
+from mitminterp.executor import CommandsExecutor
 
 
 def parse_args():
