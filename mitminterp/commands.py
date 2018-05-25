@@ -1,5 +1,5 @@
 import sys
-
+import typing
 
 # Commands examples
 # underscore(_) means dot(.)
@@ -8,11 +8,12 @@ import sys
 # In order to write command like myaddon.command,
 # just define function myaddon_command.
 
-def _version():
+
+def _version(*args):
     return sys.version_info
 
 
-def a_sum(arg=None):
+def a_sum(arg=None) -> int:
     arg = arg or []
     new_args = []
     for a in arg:
