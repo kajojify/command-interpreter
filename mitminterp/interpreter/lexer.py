@@ -14,10 +14,10 @@ special_symbol = re.escape("!@#$%^&*+{}:<>?,;/=-~")
 plain_str = r"[\w{}]+".format(special_symbol)
 
 t_PIPE = r"\|"
+t_LPAREN = r"\("
 t_RPAREN = r"\)"
 t_LBRACE = r"\["
 t_RBRACE = r"\]"
-t_LPAREN = r"\("
 t_QUOTED_STR = r"\"[\w{0}\s]*\"|\'[\w{0}\s]*\'".format(special_symbol)
 
 

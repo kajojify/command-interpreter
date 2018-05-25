@@ -18,7 +18,8 @@ class CommandsLanguageParser:
         """command_line : empty
                         | expression pipes"""
         if len(p) == 3:
-            print(self._pipe_value)
+            if self._pipe_value is not None:
+                print(self._pipe_value)
         else:
             print()
 
@@ -33,10 +34,8 @@ class CommandsLanguageParser:
     def p_pipes(self, p):
         """pipes : pipe_expression pipes
            pipes : pipe_expression"""
-        if len(p) == 2:
-            p[0] = [p[1]]
-        else:
-            p[0] = [p[1]]
+        p[0] = [p[1]]
+        if len(p) > 2:
             p[0].append(p[2])
 
     def p_pipe(self, p):
@@ -57,14 +56,7 @@ class CommandsLanguageParser:
 
     def p_command_call_no_parentheses(self, p):
         """command_call_no_parentheses : COMMAND argument_list"""
-        cm = commands.CommandsManager()
-        if self._pipe_value is None:
-            p[0] = cm.call(p[1], p[2])
-        else:
-            first_argument = self._pipe_value
-            self._pipe_value = None
-            args = [first_argument, *p[2]]
-            p[0] = cm.call(p[1], args)
+        p[0] = self._command_call(p[1], p[2])
 
     def p_argument_list(self, p):
         """argument_list : empty
@@ -92,15 +84,7 @@ class CommandsLanguageParser:
 
     def p_command_call_with_parentheses(self, p):
         """command_call_with_parentheses : COMMAND LPAREN argument_list RPAREN"""
-        cm = commands.CommandsManager()
-        if self._pipe_value is None:
-            p[0] = cm.call(p[1], p[3])
-        else:
-            first_argument = self._pipe_value
-            self._pipe_value = None
-            args = [first_argument, *p[3]]
-            p[0] = cm.call(p[1], args)
-
+        p[0] = self._command_call(p[1], p[3])
 
     def p_empty(self, p):
         """empty :"""
@@ -110,6 +94,17 @@ class CommandsLanguageParser:
             print("Syntax error. p == None!")
         else:
             print(f"Syntax error at '{p.value}'")
+
+    def _command_call(self, command, argument_list):
+        cm = commands.CommandsManager()
+        if self._pipe_value is None:
+            cvalue = cm.call(command, argument_list)
+        else:
+            first_argument = self._pipe_value
+            self._pipe_value = None
+            args = [first_argument, *argument_list]
+            cvalue = cm.call(command, args)
+        return cvalue
 
 
 def parse(lexer):

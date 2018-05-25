@@ -2,7 +2,13 @@ import sys
 
 
 # Commands examples
-def _version(*args):
+# underscore(_) means dot(.)
+# double underscore(__) means single underscore(_)
+
+# In order to write command like myaddon.command,
+# just define function myaddon_command.
+
+def _version():
     return sys.version_info
 
 
@@ -21,11 +27,16 @@ class CommandsManager:
     def __init__(self, module=None):
         self._module = module or sys.modules[__name__]
 
-    def call(self, cname: str, *args) -> None:
+    def call(self, cname: str, *args):
         fname = self.get_fname(cname)
         command = getattr(self._module, fname, None)
         if command is not None and command.__name__ != self.__class__.__name__:
-            return command(*args)
+            try:
+                cvalue = command(*args)
+            except Exception as e:
+                print(e)
+            else:
+                return cvalue
         else:
             print(f"Wrong command name {cname}")
 

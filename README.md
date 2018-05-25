@@ -3,7 +3,9 @@ It isn't inteded to be used for any reason except **Commands language** testing.
 
 ### How to use it
 
-`python3.6 main.py [-h] [-p PATH | -c COMMAND] [-q | -t]`
+1. `git clone https://github.com/kajojify/mitminterpreter.git`
+
+2. `python3.6 main.py [-h] [-p PATH | -c COMMAND] [-q | -t]`
 
 `-c --command` - specify a single command to parse.
 
@@ -12,6 +14,9 @@ It isn't inteded to be used for any reason except **Commands language** testing.
 `-q --quiet` - disable tokens list logging.
 
 `-t --tranquil` - disable commands execution.
+
+Modify `interpreter/lexer.py` and run tool with `-t` argument in order to play with lexer.
+Modify `interpreter/parser.py` in order to play with parser.
 
 
 You can also just run it `python3.6 main.py` and input commands on your own:
